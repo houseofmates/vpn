@@ -1,0 +1,35 @@
+name: vpn
+description: A Flutter VPN client for Proton VPN free tier.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.19.0 <3.0.0'
+  flutter: '>=3.10.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.0.5
+  flutter_secure_storage: ^8.0.0
+  wireguard_flutter: ^0.2.0
+  system_tray: ^2.0.0
+  flutter_local_notifications: ^12.0.4
+  http: ^1.1.0
+  google_fonts: ^4.0.4
+  flutter_svg: ^2.0.0+1
+  connectivity_plus: ^4.0.2
+  pointycastle: ^3.7.3
+  convert: ^3.1.1
+  crypto: ^3.0.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/flags/
