@@ -207,7 +207,7 @@ class Fido2 {
   });
 
   dynamic authenticationOptions;
-  List<dynamic> registeredKeys;
+  List<dynamic> registeredKeys = [];
 
   Fido2.fromJson(Map<String, dynamic> json) {
     authenticationOptions = json["AuthenticationOptions"];
@@ -224,6 +224,7 @@ LogicalServersResponse logicalServersResponseFromJson(String str) => LogicalServ
 String logicalServersResponseToJson(LogicalServersResponse data) => json.encode(data.toJson());
 
 class LogicalServersResponse {
+  double? load;
   LogicalServersResponse({
     required this.logicalServers,
   });
@@ -240,43 +241,41 @@ class LogicalServersResponse {
 }
 
 class LogicalServer {
+  String name;
+  String exitCountry;
+  List<PhysicalServer> servers;
+  int features;
+  double? load;
+
   LogicalServer({
     required this.name,
     required this.exitCountry,
-    this.region,
-    this.city,
     required this.servers,
     required this.features,
-    this.tier,
+    this.load,
   });
 
-  String name;
-  String exitCountry;
-  String? region;
-  String? city;
-  List<PhysicalServer> servers;
-  int features;
-  int? tier;
+  factory LogicalServer.fromJson(Map<String, dynamic> json) {
+    return LogicalServer(
+      name: json['Name'] ?? '',
+      exitCountry: json['ExitCountry'] ?? '',
+      servers: (json['Servers'] as List<dynamic>?)
+              ?.map((e) => PhysicalServer.fromJson(e as Map<String, dynamic>))
+              .toList() ?? [],
+      features: json['Features'] ?? 0,
+      load: (json['Load'] as num?)?.toDouble(),
+    );
+  }
 
-  factory LogicalServer.fromJson(Map<String, dynamic> json) => LogicalServer(
-    name: json["Name"],
-    exitCountry: json["ExitCountry"],
-    region: json["Region"],
-    city: json["City"],
-    servers: List<PhysicalServer>.from(json["Servers"].map((x) => PhysicalServer.fromJson(x))),
-    features: json["Features"],
-    tier: json["Tier"],
-  );
-
-  Map<String, dynamic> toJson() => {
-    "Name": name,
-    "ExitCountry": exitCountry,
-    "Region": region,
-    "City": city,
-    "Servers": List<dynamic>.from(servers.map((x) => x.toJson())),
-    "Features": features,
-    "Tier": tier,
-  };
+  Map<String, dynamic> toJson() {
+    return {
+      'Name': name,
+      'ExitCountry': exitCountry,
+      'Servers': servers.map((e) => e.toJson()).toList(),
+      'Features': features,
+      'Load': load,
+    };
+  }
 }
 
 class PhysicalServer {

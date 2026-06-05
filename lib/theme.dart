@@ -7,7 +7,7 @@ ThemeData theme() {
     colorScheme: ColorScheme.dark(
       background: const Color(0xFF050505),
       surface: const Color(0xFF121212),
-      primary: const Color(0xFFFFD700),
+      primary: const Color(0xFFF6B012),
       secondary: const Color(0xFF1E90FF),
     ),
     textTheme: GoogleFonts.varelaRoundTextTheme(
@@ -21,7 +21,7 @@ ThemeData theme() {
         fontWeight: FontWeight.bold,
       ),
     ),
-    cardTheme: CardTheme(
+    cardTheme: CardThemeData(
       color: const Color(0xFF1A1A1A),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -29,7 +29,7 @@ ThemeData theme() {
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFFFD700),
+        backgroundColor: const Color(0xFFF6B012),
         foregroundColor: const Color(0xFF050505),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
@@ -39,7 +39,7 @@ ThemeData theme() {
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        side: const BorderSide(color: Color(0xFFFFD700)),
+        side: const BorderSide(color: Color(0xFFF6B012)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
         ),
@@ -58,13 +58,13 @@ ThemeData theme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFFFD700), width: 2),
+        borderSide: const BorderSide(color: Color(0xFFF6B012), width: 2),
       ),
       hintStyle: const TextStyle(color: Colors.white54),
       labelStyle: const TextStyle(color: Colors.white70),
     ),
     switchTheme: SwitchThemeData(
-      thumbColor: MaterialStateProperty.all(const Color(0xFFFFD700)),
+      thumbColor: MaterialStateProperty.all(const Color(0xFFF6B012)),
       trackColor: MaterialStateProperty.all(const Color(0xFF1E90FF)),
     ),
     dividerTheme: const DividerThemeData(

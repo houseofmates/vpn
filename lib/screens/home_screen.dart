@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                   final servers = serverProvider.servers;
                   if (servers.isEmpty) {
-                    return const Center(child: Text('No servers available'));
+                    return const Center(child: Text('no servers available'));
                   }
                   return ListView.builder(
                     itemCount: servers.length,

@@ -18,7 +18,7 @@ A Flutter application that connects to Proton VPN's free tier using the WireGuar
 
 - Background: #050505 (near-black)
 - Surface: #121212 or #1A1A1A
-- Primary accent: #FFD700 (yellow)
+- Primary accent: #F6B012 (yellow)
 - Secondary accent: #1E90FF (dodger blue)
 - Font: Varela Round
 

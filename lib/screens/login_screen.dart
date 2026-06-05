@@ -66,7 +66,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   // Logo or title
                   Text(
-                    'VPN',
+                    'vpn',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(context).colorScheme.primary,
                           fontSize: 32,
@@ -75,33 +75,33 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 40),
                   CustomTextField(
                     controller: _usernameController,
-                    label: 'Username or Email',
+                    label: 'username or email',
                     icon: Icons.person_outline,
                     validator: (value) =>
-                        value == null || value.isEmpty ? 'Enter your username' : null,
+                        value == null || value.isEmpty ? 'enter your username' : null,
                   ),
                   const SizedBox(height: 16),
                   CustomTextField(
                     controller: _passwordController,
-                    label: 'Password',
+                    label: 'password',
                     icon: Icons.lock_outline,
                     obscureText: true,
                     validator: (value) =>
-                        value == null || value.isEmpty ? 'Enter your password' : null,
+                        value == null || value.isEmpty ? 'enter your password' : null,
                   ),
                   const SizedBox(height: 16),
                   // TOTP field (conditionally shown)
                   if (_showTotp)
                     CustomTextField(
                       controller: _totpController,
-                      label: 'Two-Factor Code',
+                      label: 'two-factor code',
                       icon: Icons.qr_code,
                       validator: (value) =>
-                          value == null || value.isEmpty ? 'Enter 2FA code' : null,
+                          value == null || value.isEmpty ? 'enter 2fa code' : null,
                     ),
                   const SizedBox(height: 24),
                   CustomButton(
-                    text: _isLoading ? 'Connecting...' : 'Login',
+                    text: _isLoading ? 'connecting...' : 'login',
                     onPressed: _isLoading ? null : _login,
                     isLoading: _isLoading,
                   ),
@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       // Forgot password?
                     },
-                    child: const Text('Forgot password?'),
+                    child: const Text('forgot password?'),
                   ),
                 ],
               ),

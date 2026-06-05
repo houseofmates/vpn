@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/server.dart';
+import '../models/api_models.dart';
 import '../services/wireguard_service.dart';
 import '../providers/connection_provider.dart';
 
@@ -46,12 +46,12 @@ class ServerListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Load: ${server.load.toStringAsFixed(0)}%',
+                  'load: ${server.load?.toStringAsFixed(0) ?? "0"}%',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
                 if (server.servers.isNotEmpty)
                   Text(
-                    'Domain: ${server.servers.first.domain}',
+                    'domain: ${server.servers.first.domain}',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
               ],
@@ -74,7 +74,7 @@ class ServerListItem extends StatelessWidget {
                           backgroundColor: Theme.of(context).colorScheme.secondary,
                           foregroundColor: Colors.white,
                         ),
-                        child: const Text('Connect'),
+                        child: const Text('connect'),
                       ),
           ),
         );

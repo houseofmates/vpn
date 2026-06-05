@@ -1,79 +1,57 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../services/wireguard_service.dart';
-import '../models/server.dart';
+import '../models/api_models.dart';
 
-class ConnectionProvider with ChangeNotifier {
+class ConnectionProvider extends ChangeNotifier {
   final WireguardService _wireguardService = WireguardService();
   bool _isConnected = false;
   bool _isConnecting = false;
   String? _currentServer;
-  String? _connectionError;
-  Timer? _connectionTimer;
   int _connectedSeconds = 0;
+  Timer? _timer;
 
   bool get isConnected => _isConnected;
   bool get isConnecting => _isConnecting;
   String? get currentServer => _currentServer;
-  String? get connectionError => _connectionError;
   int get connectedSeconds => _connectedSeconds;
 
   Future<void> connectToServer(LogicalServer server) async {
-    _setConnecting(true);
-    _setError(null);
+    _isConnecting = true;
+    notifyListeners();
     try {
       final config = await _wireguardService.generateWgConfig(server);
-      final success = await _wireguardService.connect(config);
-      if (success) {
-        _setConnected(true, server.name);
-        _startConnectionTimer();
-      } else {
-        _setError('Failed to start WireGuard tunnel');
+      final ok = await _wireguardService.connect(config);
+      if (ok) {
+        _isConnected = true;
+        _currentServer = server.name;
+        _connectedSeconds = 0;
+        _timer?.cancel();
+        _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+          _connectedSeconds++;
+          notifyListeners();
+        });
       }
     } catch (e) {
-      _setError(e.toString());
+      debugPrint('Connection error: $e');
     } finally {
-      _setConnecting(false);
+      _isConnecting = false;
+      notifyListeners();
     }
   }
 
   Future<void> disconnect() async {
-    _stopConnectionTimer();
     await _wireguardService.disconnect();
-    _setConnected(false, null);
-  }
-
-  void _setConnected(bool connected, String? serverName) {
-    _isConnected = connected;
-    _currentServer = serverName;
-    if (!connected) {
-      _connectedSeconds = 0;
-    }
+    _isConnected = false;
+    _currentServer = null;
+    _timer?.cancel();
+    _timer = null;
     notifyListeners();
   }
 
-  void _setConnecting(bool connecting) {
-    _isConnecting = connecting;
-    notifyListeners();
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
-
-  void _setError(String? error) {
-    _connectionError = error;
-    notifyListeners();
-  }
-
-  void _startConnectionTimer() {
-    _connectedSeconds = 0;
-    _connectionTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _connectedSeconds++;
-      notifyListeners();
-    });
-  }
-
-  void _stopConnectionTimer() {
-    _connectionTimer?.cancel();
-    _connectionTimer = null;
-  }
-
-  // Optional: method to get current traffic stats (if needed)
 }

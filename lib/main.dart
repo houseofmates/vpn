@@ -1,3 +1,5 @@
+import 'package:vpn/providers/server_provider.dart';
+import 'package:vpn/providers/connection_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:vpn/screens/login_screen.dart';
@@ -82,7 +84,7 @@ class _AuthCheckerState extends State<AuthChecker> {
         backgroundColor: Color(0xFF050505),
         body: Center(
           child: CircularProgressIndicator(
-            color: Color(0xFFFFD700),
+            color: Color(0xFFF6B012),
           ),
         ),
       );

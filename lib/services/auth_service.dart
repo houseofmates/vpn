@@ -30,7 +30,7 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final user = User.fromJson(data);
-      await _storage.write(key: 'accessToken', value: user.accessToken);
+      await _storage.write(key: 'accessToken', value: user.AccessToken);
       await _storage.write(key: 'refreshToken', value: user.refreshToken);
       await _storage.write(key: 'uid', value: user.uid.toString());
       return user;
@@ -60,7 +60,7 @@ class AuthService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final user = User.fromJson(data);
-      await _storage.write(key: 'accessToken', value: user.accessToken);
+      await _storage.write(key: 'accessToken', value: user.AccessToken);
       await _storage.write(key: 'refreshToken', value: user.refreshToken);
       return user;
     } else {

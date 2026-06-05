@@ -1,2 +1,10 @@
 .env
-.env
+build/
+.dart_tool/
+.idea/
+.pub-cache/
+.packages
+.pub/
+*.iml
+*.bak
+*.g.dart

@@ -11,8 +11,8 @@ class KillSwitch extends StatelessWidget {
       builder: (context, connectionProvider, _) {
         final isConnected = connectionProvider.isConnected;
         return SwitchListTile(
-          title: const Text('Kill Switch'),
-          subtitle: const Text('Blocks internet traffic if VPN disconnects'),
+          title: const Text('kill switch'),
+          subtitle: const Text('blocks internet traffic if vpn disconnects'),
           value: false, // We'll implement later
           onChanged: isConnected ? (value) {} : null,
           secondary: const Icon(Icons.security),

@@ -40,7 +40,12 @@ class VpnApi {
 
     final response = await http.post(
       url,
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.protonmail.v1+json',
+        'x-pm-appversion': 'web-vpn-settings@5.0.2.0',
+        'User-Agent': 'ProtonVPN/1.0',
+      },
       body: jsonEncode(body),
     );
 
@@ -57,7 +62,7 @@ class VpnApi {
       if (setCookie != null) {
         // Parse cookies (simplified)
         final cookies = setCookie.split('; ');
-        for final cookie in cookies {
+        for (final cookie in cookies) {
           if (cookie.startsWith('Session-Id=') ||
               cookie.startsWith('AUTH-')) {
             final parts = cookie.split('=');
@@ -128,7 +133,7 @@ class VpnApi {
     _uid = null;
     _cookies.clear();
     if (_client != null) {
-      await _client.close();
+      _client.close();
     }
   }
 }

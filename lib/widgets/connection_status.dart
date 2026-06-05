@@ -20,22 +20,22 @@ class ConnectionStatus extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Connection Status:',
+                'connection status:',
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               if (isConnecting)
                 const Text(
-                  'Connecting...',
+                  'connecting...',
                   style: TextStyle(color: Colors.orange),
                 )
               else if (isConnected)
                 Text(
-                  'Connected for ${_formatDuration(connectedSeconds)}',
+                  'connected for ${_formatDuration(connectedSeconds)}',
                   style: const TextStyle(color: Colors.green),
                 )
               else
                 const Text(
-                  'Disconnected',
+                  'disconnected',
                   style: TextStyle(color: Colors.red),
                 ),
             ],
