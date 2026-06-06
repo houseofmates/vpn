@@ -7,8 +7,8 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      uid: json['uid'] ?? 0,
-      refreshToken: json['refreshToken'] ?? '',
+      uid: json['UID'] ?? 0,
+      refreshToken: json['RefreshToken'] ?? '',
       AccessToken: json['AccessToken'] ?? '',
     );
   }
