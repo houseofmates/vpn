@@ -28,7 +28,7 @@ class AuthService {
   Future<User?> _srpLogin(
       String username, String password, [String? totp]) async {
     // Step 1: Get SRP parameters from /auth/v4/info
-    final infoUrl = Uri.parse('$_baseUrl/auth/v4/info');
+    final infoUrl = Uri.parse('$_baseUrl/auth/info');
     final infoResponse = await http.post(
       infoUrl,
       headers: _headers(),
@@ -62,11 +62,11 @@ class AuthService {
     );
 
     // Step 3: Send SRP proof to /auth/v4
-    final authUrl = Uri.parse('$_baseUrl/auth/v4');
+    final authUrl = Uri.parse('$_baseUrl/auth');
     final authBody = {
-      'clientEphemeral': proof['clientEphemeral'],
-      'clientProof': proof['clientProof'],
-      'srpSession': srpSession,
+      'ClientEphemeral': proof['clientEphemeral'],
+      'ClientProof': proof['clientProof'],
+      'SRPSession': srpSession,
     };
 
     final authResponse = await http.post(
