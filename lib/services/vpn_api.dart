@@ -25,63 +25,7 @@ class VpnApi {
   }
 
   Future<bool> login(String username, String password, [String? totp]) async {
-    final url = Uri.parse('$_baseUrl/api/auth/v4');
-    final body = {
-      'username': username,
-      'password': password,
-      'grant_type': 'password',
-      'client_id': 'protonvpn',
-      'client_secret': '',
-      'scope': '',
-    };
-    if (totp != null && totp.isNotEmpty) {
-      body['totp'] = totp;
-    }
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.protonmail.v1+json',
-        'x-pm-appversion': 'web-vpn-settings@5.0.2.0',
-        'User-Agent': 'ProtonVPN/1.0',
-      },
-      body: jsonEncode(body),
-    );
-
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      // Store tokens
-      await _storage.write(key: 'accessToken', value: data['AccessToken']);
-      await _storage.write(key: 'refreshToken', value: data['RefreshToken']);
-      await _storage.write(key: 'uid', value: data['UID'].toString());
-
-      // Extract cookies and headers for VPN API
-      // The response headers may contain Set-Cookie
-      final setCookie = response.headers['set-cookie'];
-      if (setCookie != null) {
-        // Parse cookies (simplified)
-        final cookies = setCookie.split('; ');
-        for (final cookie in cookies) {
-          if (cookie.startsWith('Session-Id=') ||
-              cookie.startsWith('AUTH-')) {
-            final parts = cookie.split('=');
-            if (parts.length == 2) {
-              _cookies[parts[0]] = parts[1];
-            }
-          }
-        }
-      }
-      // The uid from the response
-      _uid = data['UID'].toString();
-      // Also, the x-pm-uid header might be in the response? Actually, we need to send it in subsequent requests.
-      // We'll store it as well.
-      await _storage.write(key: 'vpn_uid', value: _uid);
-      await _storage.write(key: 'vpn_cookies', value: jsonEncode(_cookies));
-      return true;
-    } else {
-      throw Exception('Failed to login: ${response.statusCode}');
-    }
+    throw Exception('Use AuthService.login() for SRP-based authentication');
   }
 
   Future<Map<String, String>> _getVpnHeaders() async {
