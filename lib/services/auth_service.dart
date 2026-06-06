@@ -7,7 +7,7 @@ import 'proton_srp.dart';
 
 class AuthService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  static const _baseUrl = 'https://account.protonvpn.com';
+  static const _baseUrl = 'https://vpn-api.proton.me';
 
   Map<String, String> _headers() => {
         'Content-Type': 'application/json',
@@ -27,8 +27,8 @@ class AuthService {
 
   Future<User?> _srpLogin(
       String username, String password, [String? totp]) async {
-    // Step 1: Get SRP parameters from /auth/v4/info
-    final infoUrl = Uri.parse('$_baseUrl/api/auth/v4/info');
+    // Step 1: Get SRP parameters from /auth/info
+    final infoUrl = Uri.parse('$_baseUrl/auth/info');
     final infoResponse = await http.post(
       infoUrl,
       headers: _headers(),
@@ -61,12 +61,13 @@ class AuthService {
       version: version,
     );
 
-    // Step 3: Send SRP proof to /auth/v4
-    final authUrl = Uri.parse('$_baseUrl/api/auth/v4');
+    // Step 3: Send SRP proof to /auth
+    final authUrl = Uri.parse('$_baseUrl/auth');
     final authBody = {
-      'clientEphemeral': proof['clientEphemeral'],
-      'clientProof': proof['clientProof'],
-      'srpSession': srpSession,
+      'Username': username,
+      'ClientEphemeral': proof['clientEphemeral'],
+      'ClientProof': proof['clientProof'],
+      'SRPSession': srpSession,
     };
 
     final authResponse = await http.post(
@@ -92,12 +93,12 @@ class AuthService {
     final refreshToken = await _storage.read(key: 'refreshToken');
     if (refreshToken == null) return null;
 
-    final url = Uri.parse('$_baseUrl/api/auth/v4');
+    final url = Uri.parse('$_baseUrl/auth/refresh');
     final body = {
-      'grant_type': 'refresh_token',
-      'client_id': 'protonvpn',
-      'client_secret': '',
-      'refresh_token': refreshToken,
+      'ResponseType': 'token',
+      'GrantType': 'refresh_token',
+      'RefreshToken': refreshToken,
+      'RedirectURI': 'http://protonmail.ch',
     };
 
     final response = await http.post(
