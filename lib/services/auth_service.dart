@@ -81,6 +81,10 @@ class AuthService {
       'SRPSession': srpSession,
     };
 
+    if (humanVerificationToken != null && humanVerificationToken.isNotEmpty) {
+      authBody['HumanVerificationToken'] = humanVerificationToken;
+    }
+
     final headers = _headers();
     if (humanVerificationToken != null && humanVerificationToken.isNotEmpty) {
       headers['x-pm-human-verification-token'] = humanVerificationToken;
@@ -104,6 +108,10 @@ class AuthService {
               details['HumanVerificationMethods'] ?? ['captcha']),
           webUrl: details['WebUrl'] ?? '',
           expiresAt: details['ExpiresAt'] ?? 0,
+          username: username,
+          clientEphemeral: clientEphemeral,
+          clientProof: clientProof,
+          srpSession: srpSession,
         );
       }
     }
@@ -125,43 +133,14 @@ class AuthService {
     String username,
     String password,
     String humanVerificationToken,
+    String clientEphemeral,
+    String clientProof,
+    String srpSession,
   ) async {
-    final infoUrl = Uri.parse('$_baseUrl/auth/info');
-    final infoResponse = await http.post(
-      infoUrl,
-      headers: _headers(),
-      body: jsonEncode({'Username': username}),
-    );
-
-    if (infoResponse.statusCode != 200) {
-      throw Exception(
-          'Failed to get SRP info: ${infoResponse.statusCode} - ${infoResponse.body}');
-    }
-
-    final infoData = jsonDecode(infoResponse.body);
-    if (infoData['Code'] != 1000) {
-      throw Exception(
-          'SRP info error: ${infoData['Code']} - ${infoData['Error']}');
-    }
-
-    final modulus = infoData['Modulus'] as String;
-    final serverEphemeral = infoData['ServerEphemeral'] as String;
-    final salt = infoData['Salt'] as String;
-    final version = infoData['Version'] as int;
-    final srpSession = infoData['SRPSession'] as String;
-
-    final proof = ProtonSRP.computeProof(
-      password: password,
-      modulusArmored: modulus,
-      serverEphemeralB64: serverEphemeral,
-      saltB64: salt,
-      version: version,
-    );
-
     return _submitAuth(
       username,
-      proof['clientEphemeral']!,
-      proof['clientProof']!,
+      clientEphemeral,
+      clientProof,
       srpSession,
       humanVerificationToken,
     );

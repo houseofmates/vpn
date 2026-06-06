@@ -4,11 +4,20 @@ class HumanVerificationException implements Exception {
   final String webUrl;
   final int expiresAt;
 
+  final String username;
+  final String clientEphemeral;
+  final String clientProof;
+  final String srpSession;
+
   HumanVerificationException({
     required this.token,
     required this.methods,
     required this.webUrl,
     required this.expiresAt,
+    required this.username,
+    required this.clientEphemeral,
+    required this.clientProof,
+    required this.srpSession,
   });
 
   @override

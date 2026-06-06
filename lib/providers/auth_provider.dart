@@ -35,6 +35,9 @@ class AuthProvider with ChangeNotifier {
     String username,
     String password,
     String humanVerificationToken,
+    String clientEphemeral,
+    String clientProof,
+    String srpSession,
   ) async {
     _setLoading(true);
     _setError(null);
@@ -43,6 +46,9 @@ class AuthProvider with ChangeNotifier {
         username,
         password,
         humanVerificationToken,
+        clientEphemeral,
+        clientProof,
+        srpSession,
       );
       _user = user;
       await _vpnApi.init();

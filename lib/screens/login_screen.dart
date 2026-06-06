@@ -106,9 +106,12 @@ class _LoginScreenState extends State<LoginScreen> {
       try {
         await Provider.of<AuthProvider>(context, listen: false)
             .loginWithHumanVerification(
-          _usernameController.text.trim(),
+          e.username,
           _passwordController.text,
           result,
+          e.clientEphemeral,
+          e.clientProof,
+          e.srpSession,
         );
       } catch (e) {
         if (mounted) {
