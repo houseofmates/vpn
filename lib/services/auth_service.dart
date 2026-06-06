@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import '../models/user.dart';
 import 'proton_srp.dart';
+import 'human_verification_exception.dart';
 
 class AuthService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -62,19 +63,50 @@ class AuthService {
     );
 
     // Step 3: Send SRP proof to /auth
+    return _submitAuth(username, proof['clientEphemeral']!, proof['clientProof']!, srpSession);
+  }
+
+  Future<User?> _submitAuth(
+    String username,
+    String clientEphemeral,
+    String clientProof,
+    String srpSession, [
+    String? humanVerificationToken,
+  ]) async {
     final authUrl = Uri.parse('$_baseUrl/auth');
     final authBody = {
       'Username': username,
-      'ClientEphemeral': proof['clientEphemeral'],
-      'ClientProof': proof['clientProof'],
+      'ClientEphemeral': clientEphemeral,
+      'ClientProof': clientProof,
       'SRPSession': srpSession,
     };
 
+    final headers = _headers();
+    if (humanVerificationToken != null && humanVerificationToken.isNotEmpty) {
+      headers['x-pm-human-verification-token'] = humanVerificationToken;
+      headers['x-pm-human-verification-method'] = 'captcha';
+    }
+
     final authResponse = await http.post(
       authUrl,
-      headers: _headers(),
+      headers: headers,
       body: jsonEncode(authBody),
     );
+
+    // Handle human verification (captcha) if needed
+    if (authResponse.statusCode == 422) {
+      final data = jsonDecode(authResponse.body);
+      if (data['Code'] == 9001 && data['Details'] != null) {
+        final details = data['Details'];
+        throw HumanVerificationException(
+          token: details['HumanVerificationToken'] ?? '',
+          methods: List<String>.from(
+              details['HumanVerificationMethods'] ?? ['captcha']),
+          webUrl: details['WebUrl'] ?? '',
+          expiresAt: details['ExpiresAt'] ?? 0,
+        );
+      }
+    }
 
     if (authResponse.statusCode == 200) {
       final data = jsonDecode(authResponse.body);
@@ -87,6 +119,52 @@ class AuthService {
 
     throw Exception(
         'Failed to login: ${authResponse.statusCode} - ${authResponse.body}');
+  }
+
+  Future<User?> loginWithHumanVerification(
+    String username,
+    String password,
+    String humanVerificationToken,
+  ) async {
+    final infoUrl = Uri.parse('$_baseUrl/auth/info');
+    final infoResponse = await http.post(
+      infoUrl,
+      headers: _headers(),
+      body: jsonEncode({'Username': username}),
+    );
+
+    if (infoResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to get SRP info: ${infoResponse.statusCode} - ${infoResponse.body}');
+    }
+
+    final infoData = jsonDecode(infoResponse.body);
+    if (infoData['Code'] != 1000) {
+      throw Exception(
+          'SRP info error: ${infoData['Code']} - ${infoData['Error']}');
+    }
+
+    final modulus = infoData['Modulus'] as String;
+    final serverEphemeral = infoData['ServerEphemeral'] as String;
+    final salt = infoData['Salt'] as String;
+    final version = infoData['Version'] as int;
+    final srpSession = infoData['SRPSession'] as String;
+
+    final proof = ProtonSRP.computeProof(
+      password: password,
+      modulusArmored: modulus,
+      serverEphemeralB64: serverEphemeral,
+      saltB64: salt,
+      version: version,
+    );
+
+    return _submitAuth(
+      username,
+      proof['clientEphemeral']!,
+      proof['clientProof']!,
+      srpSession,
+      humanVerificationToken,
+    );
   }
 
   Future<User?> refreshToken() async {

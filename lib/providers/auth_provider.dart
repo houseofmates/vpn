@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
 import '../services/vpn_api.dart';
+import '../services/human_verification_exception.dart';
 import '../models/user.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -18,12 +19,33 @@ class AuthProvider with ChangeNotifier {
     _setLoading(true);
     _setError(null);
     try {
-      // First, login via auth service to get the access token
       final user = await _authService.login(username, password, totp);
       _user = user;
-      // Then, initialize the VPN API with the session (if needed)
-      await _vpnApi.init(); // This will load stored session or we can pass the tokens
-      // For now, we assume the VpnApi uses the same secure storage
+      await _vpnApi.init();
+      notifyListeners();
+    } catch (e) {
+      _setError(e.toString());
+      rethrow;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> loginWithHumanVerification(
+    String username,
+    String password,
+    String humanVerificationToken,
+  ) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      final user = await _authService.loginWithHumanVerification(
+        username,
+        password,
+        humanVerificationToken,
+      );
+      _user = user;
+      await _vpnApi.init();
       notifyListeners();
     } catch (e) {
       _setError(e.toString());

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../providers/auth_provider.dart';
+import '../services/human_verification_exception.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/custom_button.dart';
 
@@ -36,10 +38,79 @@ class _LoginScreenState extends State<LoginScreen> {
           _passwordController.text,
           _showTotp ? _totpController.text.trim() : null,
         );
-        // If login succeeds, go to home screen
-        // Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
+      } on HumanVerificationException catch (e) {
+        await _handleHumanVerification(e);
       } catch (e) {
-        // Show error
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Login failed: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _handleHumanVerification(HumanVerificationException e) async {
+    final tokenController = TextEditingController();
+    final result = await showDialog<String?>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('human verification'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('complete the captcha in your browser, '
+                'then paste the verification token below.'),
+            const SizedBox(height: 12),
+            CustomButton(
+              text: 'open browser',
+              onPressed: () async {
+                final uri = Uri.tryParse(e.webUrl);
+                if (uri != null) {
+                  try {
+                    await launchUrl(uri,
+                        mode: LaunchMode.externalApplication);
+                  } catch (_) {}
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: tokenController,
+              decoration: const InputDecoration(
+                labelText: 'verification token',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(null),
+            child: const Text('cancel'),
+          ),
+          CustomButton(
+            text: 'submit',
+            onPressed: () => Navigator.of(ctx).pop(tokenController.text.trim()),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty && mounted) {
+      setState(() => _isLoading = true);
+      try {
+        await Provider.of<AuthProvider>(context, listen: false)
+            .loginWithHumanVerification(
+          _usernameController.text.trim(),
+          _passwordController.text,
+          result,
+        );
+      } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Login failed: $e')),
