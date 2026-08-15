@@ -17,7 +17,7 @@ dependencies:
   system_tray: ^2.0.0
   flutter_local_notifications: ^21.0.0
   http: ^1.1.0
-  google_fonts: ^4.0.4
+  google_fonts: ^6.3.3
   flutter_svg: ^2.0.0+1
   connectivity_plus: ^4.0.2
   pointycastle: ^3.7.3
@@ -26,6 +26,8 @@ dependencies:
   cryptography: ^2.9.0
   bcrypt: ^1.2.0
   url_launcher: ^6.3.2
+  webview_flutter: ^4.13.1
+  flutter_inappwebview: ^6.1.5
 dev_dependencies:
   json_serializable: ^6.6.1
   build_runner: ^2.3.2

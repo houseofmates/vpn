@@ -53,7 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleHumanVerification(HumanVerificationException e) async {
-    final tokenController = TextEditingController();
+    final tokenController = TextEditingController(text: e.token);
+
+    final uri = Uri.tryParse(e.webUrl);
+    if (uri != null) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+
+    if (!mounted) return;
     final result = await showDialog<String?>(
       context: context,
       barrierDismissible: false,
@@ -63,21 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('complete the captcha in your browser, '
-                'then paste the verification token below.'),
-            const SizedBox(height: 12),
-            CustomButton(
-              text: 'open browser',
-              onPressed: () async {
-                final uri = Uri.tryParse(e.webUrl);
-                if (uri != null) {
-                  try {
-                    await launchUrl(uri,
-                        mode: LaunchMode.externalApplication);
-                  } catch (_) {}
-                }
-              },
-            ),
+            const Text('complete the captcha in your browser.'),
             const SizedBox(height: 12),
             TextField(
               controller: tokenController,
@@ -95,24 +88,33 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           CustomButton(
             text: 'submit',
-            onPressed: () => Navigator.of(ctx).pop(tokenController.text.trim()),
+            onPressed: () =>
+                Navigator.of(ctx).pop(tokenController.text.trim()),
           ),
         ],
       ),
     );
 
-    if (result != null && result.isNotEmpty && mounted) {
+    final token = result;
+    if (token != null && token.isNotEmpty && mounted) {
       setState(() => _isLoading = true);
       try {
         await Provider.of<AuthProvider>(context, listen: false)
             .loginWithHumanVerification(
           e.username,
           _passwordController.text,
-          result,
+          token,
           e.clientEphemeral,
           e.clientProof,
           e.srpSession,
         );
+      } on HumanVerificationException catch (e2) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Human verification still needed')),
+          );
+          await _handleHumanVerification(e2);
+        }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -6,8 +6,38 @@ import '../models/user.dart';
 import 'proton_srp.dart';
 import 'human_verification_exception.dart';
 
+class _CookieClient extends http.BaseClient {
+  final http.Client _inner = http.Client();
+  final Map<String, String> _cookies = {};
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    if (_cookies.isNotEmpty) {
+      request.headers['Cookie'] =
+          _cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+    }
+    return _inner.send(request).then((response) {
+      final setCookie = response.headers['set-cookie'];
+      if (setCookie != null) {
+        for (final part in setCookie.split(';')) {
+          final eq = part.indexOf('=');
+          if (eq > 0) {
+            _cookies[part.substring(0, eq).trim()] =
+                part.substring(eq + 1).trim();
+          }
+        }
+      }
+      return response;
+    });
+  }
+
+  @override
+  void close() => _inner.close();
+}
+
 class AuthService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  final _CookieClient _client = _CookieClient();
   static const _baseUrl = 'https://vpn-api.proton.me';
 
   Map<String, String> _headers() => {
@@ -28,9 +58,8 @@ class AuthService {
 
   Future<User?> _srpLogin(
       String username, String password, [String? totp]) async {
-    // Step 1: Get SRP parameters from /auth/info
     final infoUrl = Uri.parse('$_baseUrl/auth/info');
-    final infoResponse = await http.post(
+    final infoResponse = await _client.post(
       infoUrl,
       headers: _headers(),
       body: jsonEncode({'Username': username}),
@@ -53,7 +82,6 @@ class AuthService {
     final version = infoData['Version'] as int;
     final srpSession = infoData['SRPSession'] as String;
 
-    // Step 2: Compute SRP proof
     final proof = ProtonSRP.computeProof(
       password: password,
       modulusArmored: modulus,
@@ -62,8 +90,8 @@ class AuthService {
       version: version,
     );
 
-    // Step 3: Send SRP proof to /auth
-    return _submitAuth(username, proof['clientEphemeral']!, proof['clientProof']!, srpSession);
+    return _submitAuth(
+        username, proof['clientEphemeral']!, proof['clientProof']!, srpSession);
   }
 
   Future<User?> _submitAuth(
@@ -91,13 +119,12 @@ class AuthService {
       headers['x-pm-human-verification-method'] = 'captcha';
     }
 
-    final authResponse = await http.post(
+    final authResponse = await _client.post(
       authUrl,
       headers: headers,
       body: jsonEncode(authBody),
     );
 
-    // Handle human verification (captcha) if needed
     if (authResponse.statusCode == 422) {
       final data = jsonDecode(authResponse.body);
       if (data['Code'] == 9001 && data['Details'] != null) {
